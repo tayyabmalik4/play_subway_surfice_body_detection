@@ -1,11 +1,14 @@
-# libraries import
-
+# importing libraries
 import cv2
 import pyautogui
 from time import time
 from math import hypot
 import mediapipe as mp
 import matplotlib.pyplot as plt
+import webbrowser
+
+# for installing all libraries we use this code 
+# pip install -r Requirment.txt
 
 # Initialize mediapipe pose class.
 mp_pose = mp.solutions.pose
@@ -19,6 +22,8 @@ pose_video = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detec
 
 # Initialize mediapipe drawing class.
 mp_drawing = mp.solutions.drawing_utils 
+
+# Step 1: Perform Pose Detection
 
 def detectPose(image, pose, draw=False, display=False):
     '''
@@ -69,10 +74,12 @@ def detectPose(image, pose, draw=False, display=False):
         return output_image, results
 
 # Read a sample image and perform pose landmarks detection on it.
-IMG_PATH = 'media/sample.jpg'
-image = cv2.imread(IMG_PATH)
-detectPose(image, pose_image, draw=True, display=True)
+# IMG_PATH = 'media/sample.jpg'
+# image = cv2.imread(IMG_PATH)
+# detectPose(image, pose_image, draw=True, display=True)
 
+
+# Step 2: Control Starting Mechanism
 def checkHandsJoined(image, results, draw=False, display=False):
     '''
     This function checks whether the hands of the person are joined or not in an image.
@@ -145,54 +152,7 @@ def checkHandsJoined(image, results, draw=False, display=False):
         # Return the output image and the classified hands status indicating whether the hands are joined or not.
         return output_image, hand_status
 
-# Initialize the VideoCapture object to read from the webcam.
-camera_video = cv2.VideoCapture(0)
-camera_video.set(3,1280)
-camera_video.set(4,960)
-
-# Create named window for resizing purposes.
-cv2.namedWindow('Hands Joined?', cv2.WINDOW_NORMAL)
-
-# Iterate until the webcam is accessed successfully.
-while camera_video.isOpened():
-    
-    # Read a frame.
-    ok, frame = camera_video.read()
-    
-    # Check if frame is not read properly then continue to the next iteration to read the next frame.
-    if not ok:
-        continue
-    
-    # Flip the frame horizontally for natural (selfie-view) visualization.
-    frame = cv2.flip(frame, 1)
-    
-    # Get the height and width of the frame of the webcam video.
-    frame_height, frame_width, _ = frame.shape
-    
-    # Perform the pose detection on the frame.
-    frame, results = detectPose(frame, pose_video, draw=True)
-    
-    # Check if the pose landmarks in the frame are detected.
-    if results.pose_landmarks:
-            
-        # Check if the left and right hands are joined.
-        frame, _ = checkHandsJoined(frame, results, draw=True)
-                
-    # Display the frame.
-    cv2.imshow('Hands Joined?', frame)
-    
-    # Wait for 1ms. If a key is pressed, retreive the ASCII code of the key.
-    k = cv2.waitKey(1) & 0xFF
-    
-    # Check if 'ESC' is pressed and break the loop.
-    if(k == 27):
-        break
-
-# Release the VideoCapture Object and close the windows.
-camera_video.release()
-cv2.destroyAllWindows()
-
-
+# ----------------------Step 3: Control Horizontal Movements
 def checkLeftRight(image, results, draw=False, display=False):
     '''
     This function finds the horizontal position (left, center, right) of the person in an image.
@@ -256,7 +216,7 @@ def checkLeftRight(image, results, draw=False, display=False):
 
         # Display the output image.
         plt.figure(figsize=[10,10])
-        plt.imshow(output_image[:,:,::-1]);plt.title("Output Image");plt.axis('off');
+        plt.imshow(output_image[:,:,::-1]);plt.title("Output Image");plt.axis('off')
     
     # Otherwise
     else:
@@ -264,55 +224,11 @@ def checkLeftRight(image, results, draw=False, display=False):
         # Return the output image and the person's horizontal position.
         return output_image, horizontal_position
 
-# Initialize the VideoCapture object to read from the webcam.
-camera_video = cv2.VideoCapture(0)
-camera_video.set(3,1280)
-camera_video.set(4,960)
 
-# Create named window for resizing purposes.
-cv2.namedWindow('Horizontal Movements', cv2.WINDOW_NORMAL)
-
-# Iterate until the webcam is accessed successfully.
-while camera_video.isOpened():
-    
-    # Read a frame.
-    ok, frame = camera_video.read()
-    
-    # Check if frame is not read properly then continue to the next iteration to read the next frame.
-    if not ok:
-        continue
-    
-    # Flip the frame horizontally for natural (selfie-view) visualization.
-    frame = cv2.flip(frame, 1)
-    
-    # Get the height and width of the frame of the webcam video.
-    frame_height, frame_width, _ = frame.shape
-    
-    # Perform the pose detection on the frame.
-    frame, results = detectPose(frame, pose_video, draw=True)
-    
-    # Check if the pose landmarks in the frame are detected.
-    if results.pose_landmarks:
-            
-        # Check the horizontal position of the person in the frame.
-        frame, _ = checkLeftRight(frame, results, draw=True)
-                
-    # Display the frame.
-    cv2.imshow('Horizontal Movements', frame)
-    
-    # Wait for 1ms. If a a key is pressed, retreive the ASCII code of the key.
-    k = cv2.waitKey(1) & 0xFF
-    
-    # Check if 'ESC' is pressed and break the loop.
-    if(k == 27):
-        break
-
-# Release the VideoCapture Object and close the windows.
-camera_video.release()
-cv2.destroyAllWindows()
+# -------------------------------Control Vertical Movment--------------------------------------
 
 
-def checkJumpCrouch(image, results, MID_Y=250, draw=False, display=False):
+def checkJumpCrouch(image, results, MID_Y=160, draw=False, display=False):
     '''
     This function checks the posture (Jumping, Crouching or Standing) of the person in an image.
     Args:
@@ -389,65 +305,17 @@ def checkJumpCrouch(image, results, MID_Y=250, draw=False, display=False):
         # Return the output image and posture indicating whether the person is standing straight or has jumped, or crouched.
         return output_image, posture
 
-# Initialize the VideoCapture object to read from the webcam.
-camera_video = cv2.VideoCapture(0)
-camera_video.set(3,1280)
-camera_video.set(4,960)
 
-# Create named window for resizing purposes.
-cv2.namedWindow('Verticial Movements', cv2.WINDOW_NORMAL)
 
-# Iterate until the webcam is accessed successfully.
-while camera_video.isOpened():
-    
-    # Read a frame.
-    ok, frame = camera_video.read()
-    
-    # Check if frame is not read properly then continue to the next iteration to read the next frame.
-    if not ok:
-        continue
-    
-    # Flip the frame horizontally for natural (selfie-view) visualization.
-    frame = cv2.flip(frame, 1)
-    
-    # Get the height and width of the frame of the webcam video.
-    frame_height, frame_width, _ = frame.shape
-    
-    # Perform the pose detection on the frame.
-    frame, results = detectPose(frame, pose_video, draw=True)
-    
-    # Check if the pose landmarks in the frame are detected.
-    if results.pose_landmarks:
-            
-        # Check the posture (jumping, crouching or standing) of the person in the frame. 
-        frame, _ = checkJumpCrouch(frame, results, draw=True)
-                
-    # Display the frame.
-    cv2.imshow('Verticial Movements', frame)
-    
-    # Wait for 1ms. If a a key is pressed, retreive the ASCII code of the key.
-    k = cv2.waitKey(1) & 0xFF
-    
-    # Check if 'ESC' is pressed and break the loop.
-    if(k == 27):
-        break
-
-# Release the VideoCapture Object and close the windows.
-camera_video.release()
-cv2.destroyAllWindows()
-
+# -----------------------Step 5: Control Keyboard and Mouse with PyautoGUI-------------------------------
 # Press the up key.
 pyautogui.press(keys='up')
-
 # Press the down key.
 pyautogui.press(keys='down')
-
 # Press the up (4 times) and down (1 time) key.
 pyautogui.press(keys=['up', 'up', 'up', 'up', 'down'])
-
 # Press the down key 4 times.
 pyautogui.press(keys='down', presses=4)
-
 # Hold down the shift key.
 pyautogui.keyDown(key='shift') 
 
@@ -455,11 +323,7 @@ pyautogui.keyDown(key='shift')
 pyautogui.press(keys='enter', presses=2) 
 
 # Release the shift key.
-pyautogui.keyUp(key='shift')  
-
-# This cell will run automatically due to keypress events in the previous cell.
-print('Hello!')
-
+pyautogui.keyUp(key='shift') 
 # Hold down the shift key.
 pyautogui.keyDown(key='ctrl') 
 
@@ -467,15 +331,16 @@ pyautogui.keyDown(key='ctrl')
 pyautogui.press(keys='tab') 
 
 # Release the shift key.
-pyautogui.keyUp(key='ctrl')  
-
+pyautogui.keyUp(key='ctrl') 
 # Press the mouse right button. It will open up the menu.
 pyautogui.click(button='right')
-
 # Move to 1300, 800, then click the right mouse button
 pyautogui.click(x=1300, y=800, button='right')
 
+# ----------------------------------Step 6: Build the Final Application-------------------------------------
 
+# Initialize the VideoCapture object to read from the webcam.
+camera_video = cv2.VideoCapture(0)
 camera_video.set(3,1280)
 camera_video.set(4,960)
 
@@ -504,7 +369,7 @@ counter = 0
 
 # Initialize the number of consecutive frames on which we want to check if person hands joined before starting the game.
 num_of_frames = 10
-
+webbrowser.open_new("https://www.kiloo.com/subway-surfers/")
 # Iterate until the webcam is accessed successfully.
 while camera_video.isOpened():
     
@@ -686,11 +551,12 @@ while camera_video.isOpened():
     # Display the frame.            
     cv2.imshow('Subway Surfers with Pose Detection', frame)
     
+    
     # Wait for 1ms. If a a key is pressed, retreive the ASCII code of the key.
     k = cv2.waitKey(1) & 0xFF    
     
     # Check if 'ESC' is pressed and break the loop.
-    if(k == 27):
+    if(k == ord('q')):
         break
 
 # Release the VideoCapture Object and close the windows.                  
