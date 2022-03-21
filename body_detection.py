@@ -7,6 +7,9 @@ from math import hypot
 import mediapipe as mp
 import matplotlib.pyplot as plt
 
+# for installing all libraries we use this code 
+# pip install -r Requirment.txt
+
 # Initialize mediapipe pose class.
 mp_pose = mp.solutions.pose
 
